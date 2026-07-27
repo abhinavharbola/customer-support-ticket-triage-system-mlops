@@ -1,0 +1,140 @@
+# ==========================================
+# Python
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# ==========================================
+# Virtual Environments
+# ==========================================
+.venv/
+venv/
+env/
+ENV/
+
+# ==========================================
+# Environment Variables
+# ==========================================
+.env
+.env.*
+!.env.example
+
+# ==========================================
+# Jupyter Notebook
+# ==========================================
+.ipynb_checkpoints/
+
+# ==========================================
+# Pytest & Coverage
+# ==========================================
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.cache/
+.tox/
+.nox/
+
+# ==========================================
+# Type Checkers
+# ==========================================
+.mypy_cache/
+.pyre/
+.pytype/
+.ruff_cache/
+
+# ==========================================
+# Logs
+# ==========================================
+logs/
+*.log
+
+# ==========================================
+# Machine Learning
+# ==========================================
+
+# Model checkpoints
+checkpoints/
+models/
+weights/
+*.ckpt
+*.pth
+*.pt
+*.h5
+*.keras
+*.onnx
+*.pb
+*.joblib
+*.pkl
+
+# TensorBoard
+runs/
+tensorboard/
+events.out.tfevents.*
+
+# Experiment tracking
+mlruns/
+wandb/
+lightning_logs/
+
+# Data (keep folder structure)
+data/
+datasets/
+!data/.gitkeep
+!datasets/.gitkeep
+
+# Outputs
+outputs/
+results/
+predictions/
+artifacts/
+cache/
+
+# ==========================================
+# IDEs
+# ==========================================
+.vscode/
+.idea/
+*.iml
+
+# ==========================================
+# OS Files
+# ==========================================
+.DS_Store
+Thumbs.db
+
+# ==========================================
+# Temporary Files
+# ==========================================
+*.tmp
+*.temp
+*.swp
+*~
+
+# ==========================================
+# Packaging
+# ==========================================
+pip-wheel-metadata/
+
+# ==========================================
+# Misc
+# ==========================================
+*.sqlite3

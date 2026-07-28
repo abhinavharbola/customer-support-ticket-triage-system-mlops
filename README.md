@@ -1,19 +1,19 @@
-# Customer Support Ticket Triage — MLOps Lifecycle Demo
+# Customer Support Ticket Triage: MLOps Lifecycle Demo
 
-A production-shaped MLOps pipeline for routing customer support tickets to the right queue and priority. The classifier itself is deliberately simple — **the subject of this project is the lifecycle around it**: data validation, experiment tracking, CI/CD gating, deployment, monitoring, and a human-gated retraining loop, all built with free-tier tooling on a CPU-only local machine.
+A production-shaped MLOps pipeline for routing customer support tickets to the right queue and priority. The classifier itself is deliberately simple, **the subject of this project is the lifecycle around it**: data validation, experiment tracking, CI/CD gating, deployment, monitoring, and a human-gated retraining loop, all built with free-tier tooling on a CPU-only local machine.
 
 This is the third project in a three-part portfolio: (1) a RAG-based Terraform Q&A system, (2) retail demand forecasting with a self-verifying GenAI narrative layer, and (3) this project, which demonstrates MLOps engineering practice specifically rather than modeling sophistication.
 
 ## Why the model is not the point
 
-Two models are trained and compared here — a TF-IDF + Logistic Regression baseline and a fine-tuned DistilBERT — but neither is the deliverable. What's being demonstrated is:
+Two models are trained and compared here, a TF-IDF + Logistic Regression baseline and a fine-tuned DistilBERT, but neither is the deliverable. What's being demonstrated is:
 
 - a real promotion gate that only lets a new model become "Production" if it beats the current one on a fixed metric
 - experiment tracking across multiple runs and both model families in one registry
 - a model registry that actually reflects what gets served, not just what got logged
 - monitoring and a human-in-the-loop retraining trigger, not full automation
 
-LLM usage is intentionally minimal and scoped to three well-defined supporting roles (below) — never the core prediction mechanism.
+LLM usage is intentionally minimal and scoped to three well-defined supporting roles (below), never the core prediction mechanism.
 
 ## Tech stack
 
@@ -35,7 +35,7 @@ LLM usage is intentionally minimal and scoped to three well-defined supporting r
 
 All local work (orchestration, inference, dashboard) runs CPU-only on 16GB RAM. Fine-tuning runs on Kaggle's free GPU tier; everything else, including ONNX export and conversion, happens locally.
 
-## LLM usage — exactly three places, never as the classifier
+## LLM usage, exactly three places, never as the classifier
 
 1. **Low-confidence fallback.** When the served model's confidence drops below a threshold, an LLM call produces a classification and a draft reply. This is the only place an LLM substitutes for the model, and only as a fallback.
 2. **Prediction explanation.** A one-sentence natural-language justification for the routing decision, shown next to every prediction regardless of which path produced it.
@@ -43,17 +43,17 @@ All local work (orchestration, inference, dashboard) runs CPU-only on 16GB RAM. 
 
 ## The six MLOps phases, as implemented
 
-**1. Data management** — Tickets ingested into Neon with a batch ID, validated against a pandera schema (fails loudly on drift or malformed rows), redacted via the hybrid regex/LLM pipeline above, and versioned with DVC against a DagsHub remote.
+**1. Data management**, Tickets ingested into Neon with a batch ID, validated against a pandera schema (fails loudly on drift or malformed rows), redacted via the hybrid regex/LLM pipeline above, and versioned with DVC against a DagsHub remote.
 
-**2. Experimentation and training** — A Dagster job chains ingest to preprocess to train to evaluate to register. The baseline trains locally (CPU-trivial); the DistilBERT model trains on a Kaggle GPU notebook, triggered and polled from Dagster via the Kaggle API. Every run, baseline and transformer, is logged to MLflow with params, metrics, and artifacts.
+**2. Experimentation and training**, A Dagster job chains ingest to preprocess to train to evaluate to register. The baseline trains locally (CPU-trivial); the DistilBERT model trains on a Kaggle GPU notebook, triggered and polled from Dagster via the Kaggle API. Every run, baseline and transformer, is logged to MLflow with params, metrics, and artifacts.
 
-**3. CI/CD for ML** — GitHub Actions runs lint and unit tests on every push. The real gate is in `evaluate_and_register_op`: a candidate model is only registered and promoted to "Production" if its `queue_f1_macro` beats the current Production version on the same held-out metric. Passing tests is necessary but not sufficient — the metric gate is what actually controls promotion.
+**3. CI/CD for ML**, GitHub Actions runs lint and unit tests on every push. The real gate is in `evaluate_and_register_op`: a candidate model is only registered and promoted to "Production" if its `queue_f1_macro` beats the current Production version on the same held-out metric. Passing tests is necessary but not sufficient, the metric gate is what actually controls promotion.
 
-**4. Deployment / serving** — FastAPI serves whatever model is currently tagged "Production" in the MLflow registry, resolved and downloaded once at process startup (cached locally, so restarts don't re-download). Each registered version carries a `model_type` tag (`sklearn_onnx` or `transformer_onnx`) that tells the serving layer which code path to use: TF-IDF-shaped input for the baseline, tokenizer plus ONNX transformer inference for DistilBERT. A Streamlit dashboard consumes the API: submit a ticket, see the prediction, confidence, explanation, and, if triggered, the LLM fallback draft reply. Documented as containerized via Docker; not deployed to a live free-tier host, per project scope.
+**4. Deployment / serving**, FastAPI serves whatever model is currently tagged "Production" in the MLflow registry, resolved and downloaded once at process startup (cached locally, so restarts don't re-download). Each registered version carries a `model_type` tag (`sklearn_onnx` or `transformer_onnx`) that tells the serving layer which code path to use: TF-IDF-shaped input for the baseline, tokenizer plus ONNX transformer inference for DistilBERT. A Streamlit dashboard consumes the API: submit a ticket, see the prediction, confidence, explanation, and, if triggered, the LLM fallback draft reply. Documented as containerized via Docker; not deployed to a live free-tier host, per project scope.
 
-**5. Monitoring and observability** — Logfire instruments the FastAPI service for request tracing, latency, and error rates. evidently compares live prediction/input distributions against the training distribution, run on an hourly schedule or on demand from a dashboard panel that reports drift share and lets you download the full report.
+**5. Monitoring and observability**, Logfire instruments the FastAPI service for request tracing, latency, and error rates. evidently compares live prediction/input distributions against the training distribution, run on an hourly schedule or on demand from a dashboard panel that reports drift share and lets you download the full report.
 
-**6. Feedback loop and retraining, human-gated by design** — Agents can mark a prediction wrong and submit the correct label via the dashboard; corrections are written to Neon. When corrections cross a threshold, or drift crosses its own threshold, the system raises a retrain alert (visible on the dashboard, acknowledgeable by a human). Retraining is never auto-triggered; a person reviews the alert and manually kicks off the Kaggle notebook. The resulting model still has to pass the same promotion gate as everything else before it can become Production. This is a deliberate reflection of real-world practice, not a shortcut taken because of infrastructure limits, though those are real too.
+**6. Feedback loop and retraining, human-gated by design**, Agents can mark a prediction wrong and submit the correct label via the dashboard; corrections are written to Neon. When corrections cross a threshold, or drift crosses its own threshold, the system raises a retrain alert (visible on the dashboard, acknowledgeable by a human). Retraining is never auto-triggered; a person reviews the alert and manually kicks off the Kaggle notebook. The resulting model still has to pass the same promotion gate as everything else before it can become Production. This is a deliberate reflection of real-world practice, not a shortcut taken because of infrastructure limits, though those are real too.
 
 ## Results
 
@@ -68,34 +68,33 @@ DistilBERT beat the baseline on the gating metric and was promoted to Production
 
 ```
 support-ticket-mlops/
-├── requirements.txt
-├── requirements-kaggle.txt
-├── .env.example
-├── Dockerfile
-├── README.md
-├── src/
-│   ├── config.py
-│   ├── data/               # ingest, PII redaction, pandera schemas
-│   ├── models/              # baseline, ONNX export, sklearn + transformer inference,
-│   │                          model registry resolution, serving dispatcher
-│   ├── llm/                 # fallback classifier, explanation, LLM-PII layer
-│   ├── monitoring/           # evidently drift checks, logfire tracing setup
-│   └── db/                   # SQLAlchemy models + Neon session
+│
+├── src/                                    # Local application modules
+│   ├── config.py                           # environment variables, global configuration
+│   ├── data/
+│   ├── models/
+│   ├── llm/
+│   └── monitoring/
+│
 ├── dagster_project/
-│   ├── definitions.py
-│   ├── assets.py             # ops and jobs for every phase
-│   ├── kaggle_bridge.py       # push/poll/pull for the Kaggle training step
-│   └── sensors.py             # kaggle completion sensor, retrain alert schedule
+│   ├── definitions.py                      # Dagster Definitions
+│   ├── assets.py                           # data, training, deployment assets
+│   ├── kaggle_bridge.py                    # push → poll → pull Kaggle workflow
+│   └── sensors.py                          # Kaggle completion & drift sensors
+│
 ├── api/
-│   ├── main.py
-│   ├── schemas.py
-│   └── routes/                # predict.py, feedback.py
-├── dashboard/
-│   └── app.py
-├── kaggle_notebooks/
-│   ├── train_distilbert.ipynb
-│   └── kernel-metadata.json
-└── tests/
+│   ├── main.py                             # FastAPI application
+│   ├── schemas.py                          # Pydantic request/response models
+│   └── routes/
+│
+├── dashboard/app.py                        # Streamlit web interface
+│
+├── tests/
+│
+├── .env.example                            # API keys, Neon DB URL, Logfire config
+├── .gitignore
+├── requirements.txt                        # project dependencies
+└── README.md                               # architecture, setup, pipeline, deployment
 ```
 
 ## Setup
@@ -170,9 +169,9 @@ streamlit run dashboard/app.py
 
 ## API
 
-- `POST /predict` — `{"body": "<ticket text>"}` returns queue, priority, confidence, explanation, and a fallback draft reply if confidence was below threshold.
-- `POST /feedback` — submit a correction for a given `prediction_id`.
-- `GET /health` — liveness check.
+- `POST /predict`, `{"body": "<ticket text>"}` returns queue, priority, confidence, explanation, and a fallback draft reply if confidence was below threshold.
+- `POST /feedback`, submit a correction for a given `prediction_id`.
+- `GET /health`, liveness check.
 
 ## Testing
 

@@ -2,8 +2,6 @@
 
 A production-shaped MLOps pipeline for routing customer support tickets to the right queue and priority. The classifier itself is deliberately simple, **the subject of this project is the lifecycle around it**: data validation, experiment tracking, CI/CD gating, deployment, monitoring, and a human-gated retraining loop, all built with free-tier tooling on a CPU-only local machine.
 
-This is the third project in a three-part portfolio: (1) a RAG-based Terraform Q&A system, (2) retail demand forecasting with a self-verifying GenAI narrative layer, and (3) this project, which demonstrates MLOps engineering practice specifically rather than modeling sophistication.
-
 ## Why the model is not the point
 
 Two models are trained and compared here, a TF-IDF + Logistic Regression baseline and a fine-tuned DistilBERT, but neither is the deliverable. What's being demonstrated is:
